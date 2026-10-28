@@ -1,0 +1,2209 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#381E0C" />
+  <title>مینی‌گیم تطابق کارت‌های کافه</title>
+  
+  <!-- کتابخانه انیمیشن حرفه‌ای Anime.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root {
+      --font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Arial, sans-serif;
+      --bg-cream: #FAF5EE;
+      --cafe-dark: #381E0C;
+      --cafe-caramel: #C68B59;
+      --cafe-latte: #F5E8D8;
+      --cafe-peach: #FFDBC3;
+      --pastel-pink: #FFE2E9;
+      --pastel-yellow: #FEF3C7;
+      --pastel-mint: #D1FAE5;
+      --pastel-lavender: #EDE9FE;
+      --pastel-blue: #E0F2FE;
+      --accent-coral: #F47C62;
+      --accent-green: #10B981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      position: fixed;
+      width: 100%;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-cream);
+      color: var(--cafe-dark);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      direction: rtl;
+    }
+
+    /* کانتینر اصلی اپلیکیشن بازی (طراحی مدرن، متناسب با حالت گوشی بدون اسکرول) */
+    .mobile-container {
+      width: 100%;
+      max-width: 440px;
+      height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
+      background: #FFFDF9;
+      border-radius: 28px;
+      box-shadow: 0 16px 45px rgba(56, 30, 12, 0.14);
+      border: 2px solid #F3E4D6;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    @media (max-width: 480px) {
+      .mobile-container {
+        border-radius: 0;
+        border: none;
+        max-width: 100%;
+        box-shadow: none;
+      }
+    }
+
+    /* هدر مدرن و فانتزی بالای بازی با فاصله‌گذاری بهینه */
+    .game-header {
+      background: linear-gradient(135deg, #FFF7ED, #FDF0E2);
+      border-bottom: 1.5px solid #EFE0D0;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon-box {
+      width: 44px;
+      height: 44px;
+      background: #FFF5EC;
+      border: 1.5px solid #FCDDC3;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(224, 122, 95, 0.16);
+      flex-shrink: 0;
+    }
+
+    .brand-info h1 {
+      font-size: 15.5px;
+      font-weight: 900;
+      color: #381E0C;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .brand-info p {
+      font-size: 10.5px;
+      color: #9C785C;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* دکمه‌های مینیمال و فانتزی هدر */
+    .header-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      border: 1.5px solid #EBDAC9;
+      background: #FFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(56, 30, 12, 0.08);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+
+    .header-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    .header-btn:active {
+      transform: scale(0.92);
+    }
+
+    .btn-cute-sound {
+      background: linear-gradient(135deg, #FFFDF0, #FEF3C7);
+      border-color: #FDE08B;
+    }
+
+    .btn-cute-restart {
+      background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+      border-color: #A7F3D0;
+    }
+
+    .btn-cute-restart.spinning svg {
+      animation: spinRefresh 0.6s cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+    }
+
+    @keyframes spinRefresh {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* نوار وضعیت پیشرفت مدرن و پربار با ارتفاع فشرده */
+    .progress-bar-container {
+      background: #FFFDF9;
+      border-bottom: 1.5px solid #F3E4D6;
+      padding: 8px 16px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .progress-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .progress-title-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13.5px;
+      font-weight: 900;
+      color: #4A2810;
+    }
+
+    .stats-pills-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* استایل برجسته و فانتزی شمارنده زمان و رکورد */
+    .timer-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #FFF9F2, #FFEEDD);
+      border: 1.5px solid #FCD4B4;
+      padding: 6px 12px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      font-weight: 900;
+      color: #9A3412;
+      box-shadow: 0 2px 5px rgba(234, 88, 12, 0.08);
+      font-feature-settings: "tnum";
+    }
+
+    .best-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #FFFDF0, #FEF3C7);
+      border: 1.5px solid #FDE047;
+      padding: 6px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #854D0E;
+      box-shadow: 0 2px 5px rgba(202, 138, 4, 0.08);
+      font-feature-settings: "tnum";
+    }
+
+    .badge-icon-svg {
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* خط پیشرفت پاستلی کافه‌ای با نوک فوم درخشان */
+    .progress-track-line {
+      width: 100%;
+      height: 8.5px;
+      background: #EFE4D6;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      transform-origin: center center;
+    }
+
+    .progress-fill-line {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #F47C62, #10B981);
+      border-radius: 10px;
+      position: relative;
+    }
+
+    /* جلوه فوم و حباب شیری در لبه جلویی پیشرفت */
+    .progress-fill-line::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 10px;
+      border-radius: 10px;
+      background: linear-gradient(270deg, rgba(255, 255, 255, 0.9), transparent);
+      box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+    }
+
+    /* کانتینر شبکه کارت‌ها با پر کردن متناسب فضاهای خالی */
+    .board-wrapper {
+      padding: 4px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    /* سینی و قاب دکوراتیو کافه برای کارت‌ها (کاملاً رسپانسیو و متناسب با ارتفاع) */
+    .board-tray {
+      width: 100%;
+      max-width: min(430px, calc((100dvh - 195px) * 0.74));
+      max-height: 100%;
+      background: linear-gradient(160deg, #FDF8F0 0%, #FAF0E4 100%);
+      border: 2px solid #EAD8C7;
+      border-radius: 24px;
+      padding: 12px 10px;
+      box-shadow: inset 0 2px 6px rgba(120, 60, 20, 0.04), 0 6px 20px rgba(56, 30, 12, 0.05);
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: max-width 0.15s ease;
+    }
+
+    @media (min-height: 840px) {
+      .board-tray {
+        padding: 16px 12px;
+        max-width: min(430px, calc((100dvh - 210px) * 0.74));
+      }
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    @media (min-height: 840px) {
+      .cards-grid {
+        gap: 11px;
+      }
+    }
+
+    /* ساختار کارت سه‌بعدی با نسبت ابعاد متناسب و بدون اسکرول */
+    .card-container {
+      aspect-ratio: 1 / 1.28;
+      perspective: 1000px;
+      cursor: pointer;
+      position: relative;
+      touch-action: manipulation;
+      will-change: transform;
+      transform: translateZ(0);
+    }
+
+    @media (min-height: 840px) {
+      .card-container {
+        aspect-ratio: 1 / 1.32;
+      }
+    }
+
+    @media (max-height: 720px) {
+      .game-header {
+        padding: 7px 14px;
+      }
+      .brand-icon-box {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+      }
+      .brand-info h1 {
+        font-size: 14.5px;
+      }
+      .header-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 11px;
+      }
+      .progress-bar-container {
+        padding: 6px 14px 8px;
+        gap: 6px;
+      }
+      .progress-info-pill {
+        padding: 4px 10px;
+        font-size: 11px;
+      }
+      .progress-meta-text {
+        font-size: 12px;
+      }
+      .board-wrapper {
+        padding: 4px 8px;
+      }
+      .board-tray {
+        padding: 8px 8px;
+        border-radius: 20px;
+        max-width: min(430px, calc((100dvh - 170px) * 0.74));
+      }
+      .cards-grid {
+        gap: 7px;
+      }
+      .card-container {
+        aspect-ratio: 1 / 1.22;
+      }
+      .game-footer-bar {
+        padding: 6px 14px 8px;
+      }
+      .moves-badge-large {
+        padding: 6px 18px;
+      }
+      .moves-label {
+        font-size: 13px;
+      }
+      .moves-value {
+        font-size: 15px;
+      }
+    }
+
+    @media (max-height: 600px) {
+      .game-header {
+        padding: 5px 12px;
+      }
+      .brand-info p {
+        display: none;
+      }
+      .progress-bar-container {
+        padding: 4px 12px 6px;
+      }
+      .progress-track-wrapper {
+        height: 10px;
+      }
+      .board-tray {
+        padding: 6px 6px;
+        border-radius: 16px;
+        max-width: min(430px, calc((100dvh - 145px) * 0.74));
+      }
+      .cards-grid {
+        gap: 5px;
+      }
+      .card-container {
+        aspect-ratio: 1 / 1.18;
+      }
+      .game-footer-bar {
+        padding: 4px 12px 6px;
+      }
+      .moves-badge-large {
+        padding: 4px 14px;
+      }
+    }
+
+    @media (min-width: 500px) and (min-height: 920px) {
+      .mobile-container {
+        max-height: 900px;
+        border-radius: 32px;
+      }
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      z-index: 2;
+      transform-style: preserve-3d;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(74, 40, 16, 0.08);
+      transform: rotateY(0deg) translateZ(0);
+      will-change: transform;
+    }
+
+    /* بازخورد فشرده شدن لمسی روی کل کارت */
+    .card-container:active {
+      transform: scale(0.94);
+      transition: transform 0.08s ease;
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 2px solid transparent;
+    }
+
+    /* ۱. پشت کارت (Card Back) — پترن شطرنجی کافه‌ای گرم و پاستلی */
+    .card-back {
+      background-color: #FDF4E7;
+      background-image: 
+        repeating-linear-gradient(45deg, rgba(230, 195, 160, 0.28) 0, rgba(230, 195, 160, 0.28) 10px, transparent 0, transparent 20px),
+        repeating-linear-gradient(-45deg, rgba(230, 195, 160, 0.28) 0, rgba(230, 195, 160, 0.28) 10px, transparent 0, transparent 20px);
+      border: 2px solid #E6D0BE;
+      box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.7);
+    }
+
+    .card-back-badge {
+      width: clamp(28px, 48%, 46px);
+      height: clamp(28px, 48%, 46px);
+      background: #FFFFFF;
+      border: 2px solid #EBD5C2;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(14px, 20px, 22px);
+      box-shadow: 0 4px 10px rgba(120, 70, 30, 0.1);
+      transform: rotate(-3deg);
+      transition: transform 0.2s ease;
+    }
+
+    .card-container:hover .card-back-badge {
+      transform: rotate(6deg) scale(1.08);
+    }
+
+    /* ۲. روی کارت (Card Front) — پس‌زمینه‌های پاستلی ملایم و زنده */
+    .card-front {
+      transform: rotateY(180deg);
+      padding: 8px 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.85);
+    }
+
+    /* تم‌های پاستلی شاد برای هر آیتم */
+    .theme-latte {
+      background: linear-gradient(135deg, #FFF9F2, #FDEFD9);
+      border-color: #F8D3B0;
+    }
+    .theme-donut {
+      background: linear-gradient(135deg, #FFF1F4, #FFDEE6);
+      border-color: #FDBAC8;
+    }
+    .theme-croissant {
+      background: linear-gradient(135deg, #FFFDEB, #FEF3C7);
+      border-color: #FDE08B;
+    }
+    .theme-coffee_bean {
+      background: linear-gradient(135deg, #FFF3EC, #FFE0CF);
+      border-color: #FDC3A1;
+    }
+    .theme-cupcake {
+      background: linear-gradient(135deg, #FDF4FF, #F3E8FF);
+      border-color: #E9D5FF;
+    }
+    .theme-boba {
+      background: linear-gradient(135deg, #F0FDFA, #CCFBF1);
+      border-color: #99F6E4;
+    }
+    .theme-moka {
+      background: linear-gradient(135deg, #F0F9FF, #E0F2FE);
+      border-color: #BAE6FD;
+    }
+    .theme-icecream {
+      background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+      border-color: #BBF7D0;
+    }
+
+    .card-svg-wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 4px 6px rgba(70, 30, 10, 0.12));
+    }
+
+    .card-svg-wrap svg {
+      width: 90%;
+      height: 90%;
+      max-width: 72px;
+      max-height: 72px;
+      transform-origin: center center;
+      will-change: transform;
+    }
+
+    .card-container.flipped .card-svg-wrap svg {
+      transform: scale(1.06);
+    }
+
+    /* موج نوری پاستلی به هنگام مچ شدن کارت‌ها (بهینه شده با شتاب سخت‌افزاری بدون لگ) */
+    .match-pulse-ring {
+      position: absolute;
+      inset: -4px;
+      border-radius: 22px;
+      border: 2.5px solid rgba(16, 185, 129, 0.9);
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.28) 0%, rgba(254, 240, 138, 0.2) 65%, transparent 100%);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+      pointer-events: none;
+      z-index: 1;
+      will-change: transform, opacity;
+      transform: translateZ(0);
+    }
+
+    /* کارت‌های جفت‌شده (Matched) */
+    .card-container.matched .card-inner {
+      transform: rotateY(180deg) scale(0.97);
+    }
+
+    .card-container.matched .card-face {
+      border-color: var(--accent-green) !important;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.4) !important;
+    }
+
+    /* کارت‌های جفت‌نشده هنگام لرزش اشتباه (Mismatch Shake Tint) */
+    .card-container.mismatch .card-face {
+      border-color: #F87171 !important;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.3) !important;
+    }
+
+    /* فوتر پایین بازی همراه با شمارنده حرکات خوانا و فشرده */
+    .game-footer-bar {
+      padding: 8px 16px 12px;
+      background: linear-gradient(180deg, #FDF9F4, #FAF3EB);
+      border-top: 1.5px solid #F0E2D4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .moves-badge-large {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #FFFFFF;
+      border: 1.5px solid #EAD8C7;
+      padding: 7px 22px;
+      border-radius: 16px;
+      box-shadow: 0 3px 10px rgba(56, 30, 12, 0.07);
+    }
+
+    .moves-icon {
+      font-size: 19px;
+    }
+
+    .moves-label {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #552B0E;
+    }
+
+    .moves-value {
+      font-size: 18px;
+      font-weight: 900;
+      color: #D9603A;
+      background: #FFF5EE;
+      border: 1px solid #FCDDC3;
+      padding: 2px 12px;
+      border-radius: 10px;
+      min-width: 34px;
+      text-align: center;
+      font-feature-settings: "tnum";
+    }
+
+    /* پنجره شادباش و پایان بازی (Win Overlay) */
+    .win-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(26, 13, 5, 0.75);
+      backdrop-filter: blur(6px);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      border-radius: inherit;
+    }
+
+    .win-overlay.active {
+      display: flex;
+      animation: fadeIn 0.25s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .win-card {
+      background: #FFFDF9;
+      width: 100%;
+      max-width: 325px;
+      border-radius: 24px;
+      padding: 24px 20px 22px;
+      text-align: center;
+      border: 2.5px solid #F9AB72;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+      transform-origin: center center;
+    }
+
+    .win-character {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 12px;
+      animation: winBounce 1s infinite alternate cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes winBounce {
+      from { transform: translateY(0) scale(1); }
+      to { transform: translateY(-10px) scale(1.08); }
+    }
+
+    .win-title {
+      font-size: 15.5px;
+      font-weight: 900;
+      color: #2F1808;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .win-stats-grid {
+      display: flex;
+      justify-content: space-around;
+      background: #FFF7EE;
+      border: 1.5px solid #FCDDC3;
+      border-radius: 16px;
+      padding: 11px;
+      margin-bottom: 18px;
+    }
+
+    .win-stat-col {
+      text-align: center;
+    }
+
+    .win-stat-label {
+      font-size: 10px;
+      color: #9C785C;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .win-stat-num {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #381E0C;
+    }
+
+    .btn-win-replay {
+      width: 100%;
+      background: linear-gradient(90deg, #F9AB72, #F47C62);
+      color: #241105;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 800;
+      padding: 13px;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(244, 124, 98, 0.35);
+      transition: all 0.15s;
+    }
+
+    .btn-win-replay:active {
+      transform: scale(0.97);
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- کانتینر اصلی اپلیکیشن بازی (صفحه اصلی مستقیم با تناسب کامل گوشی) -->
+  <main class="mobile-container">
+
+    <!-- هدر بازی با آیکون فانتزی و دکمه‌های کنترلی -->
+    <header class="game-header">
+      <div class="brand-wrap">
+        <div class="brand-icon-box">
+          <svg id="headerCupSvg" viewBox="0 0 36 36" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform-origin: center center;">
+            <ellipse cx="18" cy="31" rx="12" ry="2.5" fill="#EAD5C3" opacity="0.8"/>
+            <path d="M8 12H28L25.5 26.5C25 29 22 30 18 30C14 30 11 29 10.5 26.5L8 12Z" fill="#FFFDF9" stroke="#78350F" stroke-width="1.8"/>
+            <path d="M27 14H31C33 14 34 15.5 34 17.5C34 19.5 33 21 31 21H26" stroke="#78350F" stroke-width="1.8" stroke-linecap="round"/>
+            <ellipse cx="18" cy="12.5" rx="10" ry="2.2" fill="#B45309"/>
+            <circle cx="14" cy="20.5" r="1.5" fill="#451A03"/>
+            <circle cx="22" cy="20.5" r="1.5" fill="#451A03"/>
+            <circle cx="14.6" cy="19.8" r="0.5" fill="#FFF"/>
+            <circle cx="22.6" cy="19.8" r="0.5" fill="#FFF"/>
+            <circle cx="11.5" cy="22.5" r="1.2" fill="#FCA5A5"/>
+            <circle cx="24.5" cy="22.5" r="1.2" fill="#FCA5A5"/>
+            <path d="M16.5 23C16.5 24.2 19.5 24.2 19.5 23" stroke="#451A03" stroke-width="1.2" stroke-linecap="round"/>
+            <path class="cup-steam-heart" d="M18 5C16.5 3 14.5 3 14.5 4.8C14.5 6.5 18 8.5 18 8.5C18 8.5 21.5 6.5 21.5 4.8C21.5 3 19.5 3 18 5Z" fill="#F87171" style="transform-origin: center center;"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>تطابق کارت‌های کافه</h1>
+          <p>۸ جفت کاراکتر گوگولی رو پیدا کن</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="header-btn btn-cute-sound" id="btnMute" title="قطع / وصل صدا" onclick="toggleMute()">
+          <svg id="soundIconOn" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#FDE047" stroke="#78350F" stroke-width="2"/>
+            <path d="M15.5 8.5C16.8 9.8 16.8 14.2 15.5 15.5" stroke="#78350F" stroke-width="2"/>
+            <path d="M18.5 6C21 8.5 21 15.5 18.5 18" stroke="#78350F" stroke-width="2"/>
+          </svg>
+          <svg id="soundIconOff" style="display: none;" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#FCA5A5" stroke="#78350F" stroke-width="2"/>
+            <line x1="22" y1="9" x2="16" y2="15" stroke="#E11D48" stroke-width="2.5"/>
+            <line x1="16" y1="9" x2="22" y2="15" stroke="#E11D48" stroke-width="2.5"/>
+          </svg>
+        </button>
+        <button class="header-btn btn-cute-restart" id="btnRestart" title="شروع مجدد بازی" onclick="restartGame()">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#065F46" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6"/>
+            <path d="M4.5 9A9 9 0 0 1 19 5.5L21.5 8M2.5 16l2.5 2.5A9 9 0 0 0 19.5 15"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- نوار پیشرفت مدرن و خطی همراه با زمان و رکورد -->
+    <section class="progress-bar-container">
+      <div class="progress-top-row">
+        <div class="progress-title-badge">
+          <span>🎯 پیشرفت:</span>
+          <span id="progressText" style="color: #D9603A; font-weight: 900;">۰ از ۸ جفت</span>
+        </div>
+
+        <div class="stats-pills-wrap">
+          <div class="timer-badge" id="timerBadge" style="transform-origin: center center;">
+            <span class="badge-icon-svg">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="13" r="8.5" fill="#FED7AA" stroke="#9A3412" stroke-width="2"/>
+                <path d="M12 2V4.5M9.5 2H14.5M18.5 6L17 7.5" stroke="#9A3412" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="9.8" cy="11.5" r="1" fill="#7C2D12"/>
+                <circle cx="14.2" cy="11.5" r="1" fill="#7C2D12"/>
+                <path d="M12 13V9.5M12 13L14.5 14.5" stroke="#9A3412" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M11 15C11 15.8 13 15.8 13 15" stroke="#7C2D12" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span id="gameTimer">۰۰:۰۰</span>
+          </div>
+
+          <div class="best-badge">
+            <span class="badge-icon-svg">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 4H17V9C17 12 14.8 14 12 14C9.2 14 7 12 7 9V4Z" fill="#FDE047" stroke="#854D0E" stroke-width="1.8"/>
+                <path d="M7 6H4C3 6 2 7 2 8.5C2 10.5 3.5 11.5 5 11.5H7" stroke="#854D0E" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M17 6H20C21 6 22 7 22 8.5C22 10.5 20.5 11.5 19 11.5H17" stroke="#854D0E" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M12 14V18M9 21H15M8 18H16" stroke="#854D0E" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="10" cy="8" r="0.9" fill="#713F12"/>
+                <circle cx="14" cy="8" r="0.9" fill="#713F12"/>
+                <path d="M11 9.8C11 10.4 13 10.4 13 9.8" stroke="#713F12" stroke-width="1" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span id="bestTime">--:--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- خط پیشرفت پر شونده -->
+      <div class="progress-track-line">
+        <div class="progress-fill-line" id="progressFill"></div>
+      </div>
+    </section>
+
+    <!-- بخش بازی و سینی مخصوص کارت‌ها (پر کردن بهینه ارتفاع صفحه) -->
+    <section class="board-wrapper">
+      <div class="board-tray">
+        <div class="cards-grid" id="cardsGrid">
+          <!-- کارت‌ها به صورت پویا با جاوااسکریپت تزریق می‌شوند -->
+        </div>
+      </div>
+    </section>
+
+    <!-- فوتر پایین بازی همراه با شمارنده حرکات بزرگ و خوانا -->
+    <footer class="game-footer-bar">
+      <div class="moves-badge-large">
+        <span class="moves-icon">🎯</span>
+        <span class="moves-label">تعداد حرکات:</span>
+        <span class="moves-value" id="movesCount">۰</span>
+      </div>
+    </footer>
+
+    <!-- پنجره شادباش و پایان بازی (Win Overlay) -->
+    <div class="win-overlay" id="winOverlay">
+      <div class="win-card">
+        <!-- کاراکتر جشن فانتزی -->
+        <div class="win-character">
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="40" cy="74" rx="28" ry="4" fill="#EBD6C3"/>
+            <path d="M18 26H62L57 65C56.5 70 50 72 40 72C30 72 23.5 70 23 65L18 26Z" fill="#FFFDF9" stroke="#381E0C" stroke-width="3"/>
+            <ellipse cx="32" cy="46" rx="3.5" ry="4" fill="#381E0C"/>
+            <ellipse cx="48" cy="46" rx="3.5" ry="4" fill="#381E0C"/>
+            <circle cx="34" cy="44.5" r="1.2" fill="#FFF"/>
+            <circle cx="50" cy="44.5" r="1.2" fill="#FFF"/>
+            <ellipse cx="27" cy="50" rx="4.5" ry="2.5" fill="#FCA5A5" opacity="0.8"/>
+            <ellipse cx="53" cy="50" rx="4.5" ry="2.5" fill="#FCA5A5" opacity="0.8"/>
+            <path d="M34 52C34 56 46 56 46 52" stroke="#381E0C" stroke-width="2.5" stroke-linecap="round" fill="#E11D48"/>
+            <path d="M30 26L40 6L50 26Z" fill="#F47C62" stroke="#381E0C" stroke-width="2.5"/>
+            <circle cx="40" cy="5" r="3" fill="#FBBF24"/>
+            <path d="M34 18L46 18" stroke="#FEF08A" stroke-width="2"/>
+          </svg>
+        </div>
+
+        <h2 class="win-title">«دمت گرم! حافظه‌ت فوق‌العاده‌ست 🎉☕»</h2>
+
+        <div class="win-stats-grid">
+          <div class="win-stat-col">
+            <span class="win-stat-label">زمان ثبت شده</span>
+            <span class="win-stat-num" id="winFinalTime">۰۰:۲۸</span>
+          </div>
+          <div class="win-stat-col" style="border-right: 1.5px solid #FCDDC3; border-left: 1.5px solid #FCDDC3; padding: 0 14px;">
+            <span class="win-stat-label">تعداد حرکات</span>
+            <span class="win-stat-num" id="winFinalMoves">۸ حرکت</span>
+          </div>
+          <div class="win-stat-col">
+            <span class="win-stat-label">نتیجه</span>
+            <span class="win-stat-num" style="color: #10B981;">عالی و بی‌نقص ✨</span>
+          </div>
+        </div>
+
+        <button class="btn-win-replay" onclick="restartGame()">
+          🔄 بازی دوباره
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- کانواس اختصاصی شادباش (Confetti) -->
+  <canvas id="confettiCanvas"></canvas>
+
+
+  <!-- ========================================================
+       اسکریپت منطق بازی و کاراکترهای فانتزی Kawaii / Doodle
+       ======================================================== -->
+  <script>
+    // ۰. لایه ایمنی آفلاین کامل در صورت فیلتر بودن یا لود نشدن CDN در اینترنت سیم‌کارت
+    if (typeof window.anime === 'undefined') {
+      window.anime = function(opts) {
+        if (opts && typeof opts.complete === 'function') {
+          setTimeout(opts.complete, opts.duration || 300);
+        }
+        return { finished: Promise.resolve() };
+      };
+      window.anime.remove = function() {};
+      window.anime.stagger = function() { return 0; };
+      window.anime.random = function(min) { return min || 0; };
+    }
+
+    // ۱. کاراکترهای وکتوری فانتزی، مینیمال و بسیار بامزه (کارتونی سبک Kawaii Doodle)
+    const CAFE_ITEMS = [
+      {
+        id: 'latte',
+        name: 'فنجان لاته',
+        themeClass: 'theme-latte',
+        svg: `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="36" cy="63" rx="20" ry="3.5" fill="#E8D5C4" opacity="0.6"/>
+          <path d="M36 12C33.5 8 29.5 8 29.5 11.5C29.5 15 36 19 36 19C36 19 42.5 15 42.5 11.5C42.5 8 38.5 8 36 12Z" fill="#F87171" opacity="0.9"/>
+          <path d="M44 8C42.5 5.5 40 5.5 40 7.5C40 9.5 44 12 44 12C44 12 48 9.5 48 7.5C48 5.5 45.5 5.5 44 8Z" fill="#FCA5A5" opacity="0.75"/>
+          <ellipse cx="36" cy="56" rx="26" ry="5.5" fill="#FDE68A" stroke="#78350F" stroke-width="2.5"/>
+          <ellipse cx="36" cy="55" rx="21" ry="3.5" fill="#FEF3C7"/>
+          <path d="M17 22H55L50.5 49C49.8 54 44 56 36 56C28 56 22.2 54 21.5 49L17 22Z" fill="#FFFDF9" stroke="#78350F" stroke-width="2.5"/>
+          <path d="M52 26H59C63 26 65.5 28.5 65.5 32.5C65.5 36.5 63 39.5 59 39.5H49" stroke="#78350F" stroke-width="2.5" stroke-linecap="round"/>
+          <ellipse cx="36" cy="23" rx="17" ry="4" fill="#B45309"/>
+          <ellipse cx="36" cy="22.5" rx="14" ry="2.8" fill="#FDE68A"/>
+          <path d="M36 21C34.5 21 33 22 33 23C33 24 36 25 36 25C36 25 39 24 39 23C39 22 37.5 21 36 21Z" fill="#FFF"/>
+          <circle cx="28" cy="37" r="3.2" fill="#451A03"/>
+          <circle cx="44" cy="37" r="3.2" fill="#451A03"/>
+          <circle cx="29.2" cy="35.6" r="1.2" fill="#FFF"/>
+          <circle cx="45.2" cy="35.6" r="1.2" fill="#FFF"/>
+          <circle cx="27.2" cy="38" r="0.6" fill="#FFF"/>
+          <circle cx="43.2" cy="38" r="0.6" fill="#FFF"/>
+          <ellipse cx="23" cy="41" rx="3.5" ry="2.2" fill="#FCA5A5" opacity="0.8"/>
+          <ellipse cx="49" cy="41" rx="3.5" ry="2.2" fill="#FCA5A5" opacity="0.8"/>
+          <path d="M33 41C33 43.5 39 43.5 39 41" stroke="#451A03" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>`
+      },
+      {
+        id: 'donut',
+        name: 'دونات توت‌فرنگی',
+        themeClass: 'theme-donut',
+        svg: `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="36" cy="64" rx="21" ry="3.5" fill="#F3D1D7" opacity="0.7"/>
+          <circle cx="36" cy="36" r="26" fill="#FBBF24" stroke="#78350F" stroke-width="2.5"/>
+          <path d="M36 12C45 12 53 17 56 24C53 25 52 28 54 31C51 32 51 35 53 37C51 40 48 41 45 40C41 40 39 44 36 45C33 46 30 50 26 49C22 48 22 43 19 41C16 39 12 41 11 34C10 23 20 12 36 12Z" fill="#FB7185"/>
+          <path d="M22 17C26 14 34 14 37 15" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+          <circle cx="36" cy="36" r="8.5" fill="#FFE4E8" stroke="#78350F" stroke-width="2.5"/>
+          <rect x="23" y="20" width="5" height="2.2" rx="1.1" fill="#FEF08A" transform="rotate(30 23 20)"/>
+          <rect x="42" y="18" width="5" height="2.2" rx="1.1" fill="#67E8F9" transform="rotate(-25 42 18)"/>
+          <rect x="18" y="30" width="5" height="2.2" rx="1.1" fill="#FFFFFF" transform="rotate(45 18 30)"/>
+          <rect x="46" y="27" width="5" height="2.2" rx="1.1" fill="#A7F3D0" transform="rotate(15 46 27)"/>
+          <circle cx="30" cy="30" r="2.5" fill="#451A03"/>
+          <circle cx="42" cy="30" r="2.5" fill="#451A03"/>
+          <circle cx="31" cy="29" r="0.9" fill="#FFF"/>
+          <circle cx="43" cy="29" r="0.9" fill="#FFF"/>
+          <ellipse cx="26" cy="33" rx="2.5" ry="1.5" fill="#F43F5E" opacity="0.6"/>
+          <ellipse cx="46" cy="33" rx="2.5" ry="1.5" fill="#F43F5E" opacity="0.6"/>
+          <path d="M33.5 33.5C33.5 36 38.5 36 38.5 33.5" stroke="#451A03" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>`
+      },
+      {
+        id: 'croissant',
+        name: 'کرواسان خوابالو',
+        themeClass: 'theme-croissant',
+        svg: `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- سایه زیرین نرم کرواسان -->
+          <ellipse cx="36" cy="62" rx="22" ry="3.5" fill="#E2C9B3" opacity="0.7"/>
+
+          <!-- لایه ۱ (نوک‌های خمیده هلالی دو طرف کرواسان) -->
+          <path d="M11 48C9 41 12 32 18 28C22 25 28 26 31 30C26 34 20 41 16 48C14 50 11 51 11 48Z" fill="#D97706" stroke="#78350F" stroke-width="2.2" stroke-linejoin="round"/>
+          <path d="M61 48C63 41 60 32 54 28C50 25 44 26 41 30C46 34 52 41 56 48C58 50 61 51 61 48Z" fill="#D97706" stroke="#78350F" stroke-width="2.2" stroke-linejoin="round"/>
+
+          <!-- لایه ۲ (پیچ‌های میانی برشته و پفکی) -->
+          <path d="M19 45C17 36 21 27 27 23C32 20 37 23 38 28C33 33 27 40 23 47C20 48 19 47 19 45Z" fill="#F59E0B" stroke="#78350F" stroke-width="2.2" stroke-linejoin="round"/>
+          <path d="M53 45C55 36 51 27 45 23C40 20 35 23 34 28C39 33 45 40 49 47C52 48 53 47 53 45Z" fill="#F59E0B" stroke="#78350F" stroke-width="2.2" stroke-linejoin="round"/>
+
+          <!-- لایه ۳ (شکم اصلی پفکی و طلایی کرواسان) -->
+          <path d="M26 46C24 35 29 20 36 20C43 20 48 35 46 46C42 49 30 49 26 46Z" fill="#FBBF24" stroke="#78350F" stroke-width="2.2" stroke-linejoin="round"/>
+
+          <!-- رگه‌های کره‌ای و بازتاب طلایی پخت -->
+          <path d="M29 24C33 21.5 39 21.5 43 24" stroke="#FEF08A" stroke-width="2" stroke-linecap="round"/>
+          <path d="M28 32C32 30 40 30 44 32" stroke="#FEF3C7" stroke-width="1.6" stroke-linecap="round" opacity="0.8"/>
+          <path d="M23 30C25 28 28 28 29 30" stroke="#FEF08A" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M43 30C44 28 47 28 49 30" stroke="#FEF08A" stroke-width="1.6" stroke-linecap="round"/>
+
+          <!-- کلاه خواب گوگولی روی سر -->
+          <path d="M31 20L41 10L43 21Z" fill="#60A5FA" stroke="#1E40AF" stroke-width="1.8" stroke-linejoin="round"/>
+          <circle cx="41" cy="9.5" r="3" fill="#FFFDF9" stroke="#1E40AF" stroke-width="1.4"/>
+          <path d="M33 19L41 19" stroke="#93C5FD" stroke-width="1.5"/>
+
+          <!-- چشم‌های خوابالوی بسته واضح -->
+          <path d="M28 33C29.5 30.5 32.5 30.5 34 33" stroke="#592004" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M38 33C39.5 30.5 42.5 30.5 44 33" stroke="#592004" stroke-width="2.2" stroke-linecap="round"/>
+
+          <!-- گونه‌های گل‌انداخته سرخ -->
+          <ellipse cx="25.5" cy="37" rx="3" ry="1.8" fill="#F43F5E" opacity="0.65"/>
+          <ellipse cx="46.5" cy="37" rx="3" ry="1.8" fill="#F43F5E" opacity="0.65"/>
+
+          <!-- دهان خوابالو، بسیار واضح، بامزه با زبان صورتی در حال خمیازه -->
+          <path d="M33 37C33 42.5 39 42.5 39 37Z" fill="#881337" stroke="#451A03" stroke-width="2" stroke-linejoin="round"/>
+          <ellipse cx="36" cy="40" rx="2" ry="1.2" fill="#FB7185"/>
+
+          <!-- حباب‌های خواب Z z z -->
+          <text x="50" y="20" font-size="9" font-weight="900" fill="#3B82F6" font-family="sans-serif">z</text>
+          <text x="55" y="13" font-size="12" font-weight="900" fill="#3B82F6" font-family="sans-serif">Z</text>
+        </svg>`
+      },
+      {
+        id: 'coffee_bean',
+        name: 'دانه پرانرژی',
+        themeClass: 'theme-coffee_bean',
+        svg: `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="36" cy="64" rx="18" ry="3.5" fill="#E8D2C2" opacity="0.7"/>
+          <g transform="rotate(-15 36 36)">
+            <path d="M36 10C48 10 57 21 57 36C57 51 48 62 36 62C24 62 15 51 15 36C15 21 24 10 36 10Z" fill="#78350F" stroke="#451A03" stroke-width="2.5"/>
+            <path d="M36 12C39 23 31 31 38 43C42 50 36 60 36 60" stroke="#FDE68A" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="27" cy="31" r="3.5" fill="#FFF"/>
+            <circle cx="43" cy="31" r="3.5" fill="#FFF"/>
+            <circle cx="27.5" cy="31" r="2.5" fill="#260C02"/>
+            <circle cx="43.5" cy="31" r="2.5" fill="#260C02"/>
+            <circle cx="28.5" cy="29.8" r="1.2" fill="#FFF"/>
+            <circle cx="44.5" cy="29.8" r="1.2" fill="#FFF"/>
+            <circle cx="22" cy="35" r="2.5" fill="#F43F5E" opacity="0.75"/>
+            <circle cx="48" cy="35" r="2.5" fill="#F43F5E" opacity="0.75"/>
+            <path d="M32 37C32 41 40 41 40 37" stroke="#FEF08A" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+          <path d="M12 20L17 24M60 18L55 22" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="14" cy="30" r="1.5" fill="#F59E0B"/>
+          <circle cx="58" cy="28" r="1.5" fill="#F59E0B"/>
+        </svg>`
+      },
+      {
+        id: 'cupcake',
+        name: 'کاپ‌کیک چشمک‌زن',
+        themeClass: 'theme-cupcake',
+        svg: `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="36" cy="64" rx="19" ry="3.5" fill="#EAD7F0" opacity="0.7"/>
+          <path d="M22 38L27 60C27.5 61.5 31 62.5 36 62.5C41 62.5 44.5 61.5 45 60L50 38H22Z" fill="#E9D5FF" stroke="#6B21A8" stroke-width="2.2"/>
+          <path d="M29 38L31 60M36 38V62.5M43 38L41 60" stroke="#C084FC" stroke-width="1.5"/>
+          <path d="M17 38C17 32 22 30 25 30C26 25 31 23 36 23C41 23 46 25 47 30C50 30 55 32 55 38C55 42 51 43 49 43H23C19 43 17 42 17 38Z" fill="#F472B6" stroke="#831843" stroke-width="2.2"/>
+          <path d="M31 24C31 18 36 15 36 15C36 15 41 18 41 24" fill="#F472B6" stroke="#831843" stroke-width="2"/>
+          <circle cx="36" cy="14" r="4.2" fill="#DC2626" stroke="#991B1B" stroke-width="1.5"/>
+          <circle cx="35" cy="12.5" r="1.2" fill="#FFF"/>
+          <path d="M38 10C40 7 44 6 45 6" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="42" cy="35" r="2.8" fill="#451A03"/>
+          <circle cx="43" cy="34" r="1.1" fill="#FFF"/>
+          <path d="M29 33.5L33 35L29 36.5" stroke="#451A03" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="26" cy="37.5" r="2.2" fill="#FDA4AF"/>
+          <circle cx="46" cy="37.5" r="2.2" fill="#FDA4AF"/>
+          <path d="M34 38C34 40 38 40 38 38" stroke="#451A03" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>`
+      },
+      {
+        id: 'boba',
+        name: 'بابل‌تی گوگولی',
+        themeClass: 'theme-boba',
+        svg: `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="36" cy="64" rx="18" ry="3.5" fill="#D3EFEA" opacity="0.7"/>
+          <path d="M40 7L49 3L46 20" stroke="#F43F5E" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <ellipse cx="36" cy="20" rx="19" ry="4" fill="#CCFBF1" stroke="#0F766E" stroke-width="2.2"/>
+          <path d="M20 21L25 59C25.5 62 30 63.5 36 63.5C42 63.5 46.5 62 47 59L52 21" fill="#FFFDF9" stroke="#0F766E" stroke-width="2.2"/>
+          <path d="M22 30L25.5 58C26 60.5 30 62 36 62C42 62 46 60.5 46.5 58L50 30Z" fill="#FDBA74" opacity="0.9"/>
+          <ellipse cx="36" cy="30" rx="14" ry="2.5" fill="#FEF3C7"/>
+          <circle cx="29" cy="54" r="3.5" fill="#2E1005"/>
+          <circle cx="36" cy="56" r="3.5" fill="#2E1005"/>
+          <circle cx="43" cy="53" r="3.5" fill="#2E1005"/>
+          <circle cx="28" cy="53.5" r="0.7" fill="#FFF"/>
+          <circle cx="35" cy="55.5" r="0.7" fill="#FFF"/>
+          <circle cx="42" cy="52.5" r="0.7" fill="#FFF"/>
+          <circle cx="31" cy="40" r="2.8" fill="#311305"/>
+          <circle cx="41" cy="40" r="2.8" fill="#311305"/>
+          <circle cx="32" cy="39" r="1" fill="#FFF"/>
+          <circle cx="42" cy="39" r="1" fill="#FFF"/>
+          <circle cx="26" cy="43" r="2.5" fill="#F43F5E" opacity="0.65"/>
+          <circle cx="46" cy="43" r="2.5" fill="#F43F5E" opacity="0.65"/>
+          <path d="M33.5 43C33.5 45.5 38.5 45.5 38.5 43" stroke="#311305" stroke-width="2" stroke-linecap="round"/>
+        </svg>`
+      },
+      {
+        id: 'moka_pot',
+        name: 'موکاپات بانمک',
+        themeClass: 'theme-moka',
+        svg: `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="36" cy="64" rx="20" ry="3.5" fill="#D3E2F3" opacity="0.7"/>
+          <circle cx="36" cy="11" r="3.5" fill="#1E293B"/>
+          <path d="M22 8C20 6 23 4 25 6C27 4 30 6 28 8" stroke="#93C5FD" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
+          <path d="M24 19L36 14L48 19H24Z" fill="#93C5FD" stroke="#1E3A8A" stroke-width="2.2"/>
+          <path d="M22 19L17 38H55L50 19H22Z" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="2.2"/>
+          <path d="M32 19L30 38M40 19L42 38" stroke="#DBEAFE" stroke-width="2"/>
+          <rect x="23" y="38" width="26" height="4.5" fill="#3B82F6" stroke="#1E3A8A" stroke-width="1.5"/>
+          <circle cx="30" cy="28" r="2.6" fill="#1E3A8A"/>
+          <circle cx="42" cy="28" r="2.6" fill="#1E3A8A"/>
+          <circle cx="31" cy="27" r="0.9" fill="#FFF"/>
+          <circle cx="43" cy="27" r="0.9" fill="#FFF"/>
+          <circle cx="26" cy="31" r="2.2" fill="#F472B6" opacity="0.75"/>
+          <circle cx="46" cy="31" r="2.2" fill="#F472B6" opacity="0.75"/>
+          <path d="M34 31C34 33.5 38 33.5 38 31" stroke="#1E3A8A" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M19 42.5L24 60H48L53 42.5H19Z" fill="#93C5FD" stroke="#1E3A8A" stroke-width="2.2"/>
+          <path d="M52 23H60C63.5 23 65 26 65 31C65 38 61 42 52 44" stroke="#1E3A8A" stroke-width="3" stroke-linecap="round"/>
+          <path d="M18 23L11 28L17 31" fill="#BFDBFE" stroke="#1E3A8A" stroke-width="2"/>
+        </svg>`
+      },
+      {
+        id: 'ice_cream',
+        name: 'بستنی خندان',
+        themeClass: 'theme-icecream',
+        svg: `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="36" cy="64" rx="16" ry="3.5" fill="#D3EBDC" opacity="0.7"/>
+          <path d="M23 38L36 63L49 38H23Z" fill="#FBBF24" stroke="#78350F" stroke-width="2.2"/>
+          <path d="M28 43L44 54M44 43L28 54M32 40L40 59M40 40L32 59" stroke="#D97706" stroke-width="1.4"/>
+          <path d="M19 38C19 32 25 30 30 30C30 25 36 21 40 23C45 24 48 27 48 32C52 33 53 37 51 39C49 41 23 41 19 38Z" fill="#A7F3D0" stroke="#065F46" stroke-width="2.2"/>
+          <path d="M35 22C35 16 40 13 40 13C40 13 44 16 44 22" fill="#FBCFE8" stroke="#9D174D" stroke-width="1.8"/>
+          <circle cx="40" cy="13" r="3.5" fill="#EF4444" stroke="#991B1B" stroke-width="1.2"/>
+          <path d="M30 32C30 30 33.5 30 33.5 32" stroke="#065F46" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M39 32C39 30 42.5 30 42.5 32" stroke="#065F46" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="26" cy="34" r="2.2" fill="#F43F5E" opacity="0.75"/>
+          <circle cx="46" cy="34" r="2.2" fill="#F43F5E" opacity="0.75"/>
+          <path d="M34 35C34 37.5 38.5 37.5 38.5 35" stroke="#065F46" stroke-width="1.8" stroke-linecap="round" fill="#DC2626"/>
+        </svg>`
+      }
+    ];
+
+    // ۲. سیستم صوتی اختصاصی با Web Audio API (مستقل، سریع و بدون فایل جانبی)
+    const SoundManager = {
+      muted: false,
+      ctx: null,
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      },
+
+      playFlip() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(480, now);
+        osc.frequency.exponentialRampToValueAtTime(220, now + 0.09);
+        gain.gain.setValueAtTime(0.28, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.09);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.09);
+      },
+
+      playMatch() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const chimeNotes = [659.25, 830.61, 987.77, 1318.5]; // E5, G#5, B5, E6
+        chimeNotes.forEach((freq, i) => {
+          const now = this.ctx.currentTime + i * 0.08;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.32, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        });
+      },
+
+      playMismatch() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(240, now);
+        osc.frequency.exponentialRampToValueAtTime(160, now + 0.16);
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.16);
+      },
+
+      playWin() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const fanfare = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+        fanfare.forEach((freq, idx) => {
+          const now = this.ctx.currentTime + idx * 0.11;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now);
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + (idx === 4 ? 0.7 : 0.28));
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + (idx === 4 ? 0.7 : 0.28));
+        });
+      }
+    };
+
+    // ۳. انیمیشن کاغذ رنگی جشن (Canvas Confetti)
+    const Confetti = {
+      canvas: null,
+      ctx: null,
+      particles: [],
+      animId: null,
+
+      init() {
+        this.canvas = document.getElementById('confettiCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+      },
+
+      resize() {
+        if (!this.canvas) return;
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      },
+
+      start() {
+        this.init();
+        this.particles = [];
+        const colors = ['#F9AB72', '#F47C62', '#10B981', '#F43F5E', '#FBBF24', '#C084FC', '#67E8F9'];
+        for (let i = 0; i < 110; i++) {
+          this.particles.push({
+            x: Math.random() * this.canvas.width,
+            y: -15 - Math.random() * 60,
+            size: Math.random() * 8 + 6,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            speedY: Math.random() * 3.5 + 2.5,
+            speedX: (Math.random() - 0.5) * 3.5,
+            rot: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 12
+          });
+        }
+        if (this.animId) cancelAnimationFrame(this.animId);
+        this.loop();
+      },
+
+      loop() {
+        if (!this.ctx) return;
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        let active = false;
+
+        this.particles.forEach(p => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+          p.rot += p.rotSpeed;
+          if (p.y < this.canvas.height + 25) active = true;
+
+          this.ctx.save();
+          this.ctx.translate(p.x, p.y);
+          this.ctx.rotate((p.rot * Math.PI) / 180);
+          this.ctx.fillStyle = p.color;
+          this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+          this.ctx.restore();
+        });
+
+        if (active) {
+          this.animId = requestAnimationFrame(() => this.loop());
+        } else {
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+      }
+    };
+
+    // ۴. تبدیل اعداد به ارقام فارسی
+    function toFa(num) {
+      const faDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+      return String(num).replace(/[0-9]/g, d => faDigits[parseInt(d, 10)]);
+    }
+
+    function formatSeconds(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      const mm = String(m).padStart(2, '0');
+      const ss = String(s).padStart(2, '0');
+      return `${toFa(mm)}:${toFa(ss)}`;
+    }
+
+    // ۵. الگوریتم بر زدن Fisher-Yates
+    function fisherYates(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+      }
+      return arr;
+    }
+
+    // ۶. متغیرها و وضعیت بازی
+    const TOTAL_PAIRS = 8; // ۸ جفت = ۱۶ کارت در شبکه ۴×۴
+    let cards = [];
+    let firstCard = null;
+    let secondCard = null;
+    let isLocked = false;
+    let matchedPairs = 0;
+    let moves = 0;
+    let secondsElapsed = 0;
+    let timerInterval = null;
+    let isTimerRunning = false;
+    let bestRecordSeconds = null;
+
+    // بارگذاری بهترین زمان از LocalStorage
+    try {
+      const saved = localStorage.getItem('cafe_memory_best_record');
+      if (saved !== null) {
+        bestRecordSeconds = parseInt(saved, 10);
+        document.getElementById('bestTime').textContent = formatSeconds(bestRecordSeconds);
+      }
+    } catch(e) {}
+
+    // ساخت عرشه ۱۶ کارته (۸ جفت)
+    function generateDeck() {
+      const deck = [];
+      CAFE_ITEMS.forEach(item => {
+        deck.push({ uniqueId: item.id + '-A', itemId: item.id, name: item.name, themeClass: item.themeClass, svg: item.svg });
+        deck.push({ uniqueId: item.id + '-B', itemId: item.id, name: item.name, themeClass: item.themeClass, svg: item.svg });
+      });
+      return fisherYates(deck);
+    }
+
+    // رندر کارت‌ها با آیکون‌های وکتوری فانتزی و پالت پاستلی
+    // ساخت اولیه کارت‌ها درون DOM (فقط یک‌بار در شروع بازی اجرا می‌شود)
+    function initBoard() {
+      const grid = document.getElementById('cardsGrid');
+      grid.innerHTML = '';
+
+      cards.forEach((card, idx) => {
+        const cardElem = document.createElement('div');
+        cardElem.className = 'card-container';
+        cardElem.dataset.id = card.uniqueId;
+        cardElem.dataset.item = card.itemId;
+
+        cardElem.innerHTML = `
+          <div class="card-inner">
+            <!-- ۱. پشت کارت با پترن شطرنجی پاستلی گرم -->
+            <div class="card-face card-back">
+              <div class="card-back-badge">☕</div>
+            </div>
+            <!-- ۲. روی کارت با تصویر فانتزی کارتونی و تم رنگی پاستلی -->
+            <div class="card-face card-front ${card.themeClass}">
+              <div class="card-svg-wrap">${card.svg}</div>
+            </div>
+          </div>
+        `;
+
+        cardElem.onclick = () => handleCardClick(cards[idx], cardElem);
+        grid.appendChild(cardElem);
+      });
+
+      // اجرای افکت پخش شدن و چینش کارتی با Anime.js (فقط در لود اولیه)
+      animateCardDealing();
+    }
+
+    // به‌روزرسانی محتوای روی کارت‌ها در جای خود بدون نیاز به لود مجدد DOM (مخصوص ری‌استارت)
+    function updateCardFaces() {
+      const cardElems = document.querySelectorAll('.cards-grid .card-container');
+      cards.forEach((card, idx) => {
+        const cardElem = cardElems[idx];
+        if (!cardElem) return;
+        cardElem.dataset.id = card.uniqueId;
+        cardElem.dataset.item = card.itemId;
+        const front = cardElem.querySelector('.card-front');
+        if (front) {
+          front.className = `card-face card-front ${card.themeClass}`;
+          front.innerHTML = `<div class="card-svg-wrap">${card.svg}</div>`;
+        }
+        cardElem.onclick = () => handleCardClick(card, cardElem);
+      });
+    }
+
+    // انیمیشن پخش شدن و چینش کارت‌ها با قابلیت Stagger از مرکز شبکه ۴×۴
+    function animateCardDealing() {
+      if (typeof anime === 'undefined') return;
+
+      anime.remove('.cards-grid .card-container');
+
+      anime({
+        targets: '.cards-grid .card-container',
+        scale: [0.3, 1],
+        opacity: [0, 1],
+        translateY: [36, 0],
+        rotateZ: [() => anime.random(-7, 7), 0],
+        delay: anime.stagger(50, {
+          grid: [4, 4],
+          from: 'center'
+        }),
+        duration: 680,
+        easing: 'easeOutBack(1.3)'
+      });
+    }
+
+    // ۲. ورق خوردن فانتزی و سریع‌تر با فیزیک فشرده‌سازی و کشیدگی (Squash & Stretch Flip)
+    function flipCardUp(cardElem, onComplete) {
+      const inner = cardElem.querySelector('.card-inner');
+      if (!inner) return;
+
+      cardElem.classList.add('flipped');
+
+      if (typeof anime === 'undefined') {
+        inner.style.transform = 'rotateY(180deg) scaleX(1) scaleY(1)';
+        if (onComplete) onComplete();
+        return;
+      }
+
+      anime.remove(inner);
+      anime({
+        targets: inner,
+        rotateY: [
+          { value: 90, duration: 110, easing: 'easeInQuad' },
+          { value: 185, duration: 90, easing: 'easeOutQuad' },
+          { value: 180, duration: 100, easing: 'easeOutBack(1.2)' }
+        ],
+        scaleX: [
+          { value: 0.9, duration: 50, easing: 'easeOutQuad' },
+          { value: 0.85, duration: 70, easing: 'easeInQuad' },
+          { value: 1.06, duration: 90, easing: 'easeOutQuad' },
+          { value: 1, duration: 90, easing: 'easeOutBack(1.2)' }
+        ],
+        scaleY: [
+          { value: 0.92, duration: 50, easing: 'easeOutQuad' },
+          { value: 1.08, duration: 70, easing: 'easeInQuad' },
+          { value: 0.96, duration: 90, easing: 'easeOutQuad' },
+          { value: 1, duration: 90, easing: 'easeOutBack(1.2)' }
+        ],
+        duration: 300,
+        complete: () => {
+          inner.style.transform = 'rotateY(180deg) scaleX(1) scaleY(1)';
+          if (onComplete) onComplete();
+        }
+      });
+    }
+
+    // بازگشت سریع و ژله‌ای کارت به پشت (Flip Down)
+    function flipCardDown(cardElem, onComplete) {
+      const inner = cardElem.querySelector('.card-inner');
+      if (!inner) return;
+
+      if (typeof anime === 'undefined') {
+        cardElem.classList.remove('flipped', 'matched');
+        inner.style.transform = 'rotateY(0deg) scaleX(1) scaleY(1)';
+        if (onComplete) onComplete();
+        return;
+      }
+
+      anime.remove(inner);
+      anime({
+        targets: inner,
+        rotateY: [
+          { value: 90, duration: 110, easing: 'easeInQuad' },
+          { value: -4, duration: 90, easing: 'easeOutQuad' },
+          { value: 0, duration: 100, easing: 'easeOutBack(1.2)' }
+        ],
+        scaleX: [
+          { value: 0.9, duration: 50, easing: 'easeOutQuad' },
+          { value: 0.85, duration: 70, easing: 'easeInQuad' },
+          { value: 1.05, duration: 90, easing: 'easeOutQuad' },
+          { value: 1, duration: 90, easing: 'easeOutBack(1.2)' }
+        ],
+        scaleY: [
+          { value: 0.92, duration: 50, easing: 'easeOutQuad' },
+          { value: 1.08, duration: 70, easing: 'easeInQuad' },
+          { value: 0.96, duration: 90, easing: 'easeOutQuad' },
+          { value: 1, duration: 90, easing: 'easeOutBack(1.2)' }
+        ],
+        duration: 300,
+        complete: () => {
+          cardElem.classList.remove('flipped', 'matched');
+          inner.style.transform = 'rotateY(0deg) scaleX(1) scaleY(1)';
+          if (onComplete) onComplete();
+        }
+      });
+    }
+
+    // ۳. جشن پیدا شدن جفت‌های مشابه (Match Pop & Pulse) بهینه‌سازی شده با شتاب سخت‌افزاری بدون لگ
+    function animateMatchCelebration(card1, card2) {
+      if (typeof anime === 'undefined') return;
+
+      const cards = [card1, card2];
+      const inners = [card1.querySelector('.card-inner'), card2.querySelector('.card-inner')].filter(Boolean);
+      const svgs = [
+        card1.querySelector('.card-svg-wrap svg'),
+        card2.querySelector('.card-svg-wrap svg')
+      ].filter(Boolean);
+
+      // اطمینان از حفظ کامل جهت ۱۸۰ درجه روی کارت
+      inners.forEach(el => el.style.transform = 'rotateY(180deg) scaleX(1) scaleY(1)');
+
+      // ۱. موج نوری پاستلی از پشت دو کارت با شتاب سخت‌افزاری
+      cards.forEach(cardEl => {
+        const oldRing = cardEl.querySelector('.match-pulse-ring');
+        if (oldRing) oldRing.remove();
+
+        const ring = document.createElement('div');
+        ring.className = 'match-pulse-ring';
+        cardEl.appendChild(ring);
+
+        anime({
+          targets: ring,
+          scale: [0.9, 1.38],
+          opacity: [0.9, 0],
+          duration: 520,
+          easing: 'easeOutQuad',
+          complete: () => {
+            if (ring && ring.parentNode) ring.remove();
+          }
+        });
+      });
+
+      // ۲. جهش کارت‌ها به سمت بالا و مقیاس با حرکت نرم و روان
+      anime({
+        targets: cards,
+        translateY: [
+          { value: -9, duration: 140, easing: 'easeOutQuad' },
+          { value: 0, duration: 250, easing: 'easeOutElastic(1.2, .5)' }
+        ],
+        scale: [
+          { value: 1.08, duration: 140, easing: 'easeOutQuad' },
+          { value: 1, duration: 250, easing: 'easeOutElastic(1.2, .5)' }
+        ],
+        duration: 390,
+        begin: () => {
+          cards.forEach(c => c.style.zIndex = '15');
+        },
+        complete: () => {
+          cards.forEach(c => {
+            c.style.zIndex = '';
+            c.style.transform = '';
+          });
+        }
+      });
+
+      // ۳. تکان شادی و پرش کاراکترهای وکتوری داخل کارت (Happy Jump / Wiggle)
+      if (svgs.length > 0) {
+        anime({
+          targets: svgs,
+          translateY: [
+            { value: -7, duration: 120, easing: 'easeOutQuad' },
+            { value: 0, duration: 210, easing: 'easeOutBounce' }
+          ],
+          rotate: [
+            { value: -8, duration: 75, easing: 'easeInOutSine' },
+            { value: 8, duration: 75, easing: 'easeInOutSine' },
+            { value: -4, duration: 70, easing: 'easeInOutSine' },
+            { value: 0, duration: 70, easing: 'easeOutQuad' }
+          ],
+          scale: [
+            { value: 1.18, duration: 130, easing: 'easeOutBack(1.4)' },
+            { value: 1.06, duration: 210, easing: 'easeOutElastic(1.2, .5)' }
+          ],
+          duration: 380,
+          complete: () => {
+            svgs.forEach(s => {
+              s.style.transform = 'scale(1.06)';
+            });
+          }
+        });
+      }
+    }
+
+    // ۴. لرزش طبیعی هنگام انتخاب اشتباه (Organic Mismatch Shake) با قدرت Anime.js
+    function animateMismatchShake(card1, card2, onComplete) {
+      if (typeof anime === 'undefined') {
+        if (onComplete) onComplete();
+        return;
+      }
+
+      const cards = [card1, card2];
+      anime.remove(cards);
+
+      // لرزش ارگانیک فنری با ترکیب همزمان انحراف موقعیت (translateX) و چرخش زاویه‌ای (rotateZ) با میرایی تدریجی
+      anime({
+        targets: cards,
+        translateX: [
+          { value: -9, duration: 60, easing: 'easeOutQuad' },
+          { value: 8, duration: 65, easing: 'easeInOutSine' },
+          { value: -6, duration: 65, easing: 'easeInOutSine' },
+          { value: 4, duration: 60, easing: 'easeInOutSine' },
+          { value: -1.8, duration: 50, easing: 'easeInOutSine' },
+          { value: 0, duration: 50, easing: 'easeOutQuad' }
+        ],
+        rotateZ: [
+          { value: -4, duration: 60, easing: 'easeOutQuad' },
+          { value: 3.5, duration: 65, easing: 'easeInOutSine' },
+          { value: -2.5, duration: 65, easing: 'easeInOutSine' },
+          { value: 1.5, duration: 60, easing: 'easeInOutSine' },
+          { value: -0.6, duration: 50, easing: 'easeInOutSine' },
+          { value: 0, duration: 50, easing: 'easeOutQuad' }
+        ],
+        duration: 350,
+        complete: () => {
+          cards.forEach(c => {
+            c.style.transform = '';
+          });
+          if (onComplete) onComplete();
+        }
+      });
+    }
+
+    // ۵. انیمیشن نرم افزایشی شمارنده حرکات در طول بازی (Number Counter Animation)
+    function animateMoveCounter(oldVal, newVal) {
+      const movesElem = document.getElementById('movesCount');
+      if (!movesElem) return;
+
+      if (typeof anime === 'undefined') {
+        movesElem.textContent = toFa(newVal);
+        return;
+      }
+
+      // انیمیت تدریجی متغیر عددی با Anime.js
+      const counterObj = { count: oldVal };
+      anime({
+        targets: counterObj,
+        count: newVal,
+        round: 1,
+        duration: 220,
+        easing: 'easeOutQuad',
+        update: () => {
+          movesElem.textContent = toFa(counterObj.count);
+        }
+      });
+
+      // جهش و بازخورد فنری نشانگر عدد
+      anime.remove(movesElem);
+      anime({
+        targets: movesElem,
+        scale: [
+          { value: 1.34, duration: 80, easing: 'easeOutQuad' },
+          { value: 1, duration: 180, easing: 'easeOutBack(1.6)' }
+        ]
+      });
+    }
+
+    // ۶. پر شدن فنری نوار پیشرفت (Spring Progress Bar) با جلوه کف و فوم قهوه
+    function updateProgressUI(animate = true) {
+      const fillElem = document.getElementById('progressFill');
+      const textElem = document.getElementById('progressText');
+      const trackElem = document.querySelector('.progress-track-line');
+
+      const targetPercentage = (matchedPairs / TOTAL_PAIRS) * 100;
+
+      if (textElem) {
+        textElem.textContent = `${toFa(matchedPairs)} از ${toFa(TOTAL_PAIRS)} جفت`;
+      }
+
+      if (!fillElem) return;
+
+      if (!animate || typeof anime === 'undefined') {
+        fillElem.style.width = targetPercentage + '%';
+        return;
+      }
+
+      const currentWidthStr = fillElem.style.width || '0%';
+      const currentPercentage = parseFloat(currentWidthStr) || 0;
+
+      // ۱. پر شدن فنری افقی همراه با جهش ارتجاعی (Spring Overshoot)
+      const progressObj = { percent: currentPercentage };
+      anime.remove(progressObj);
+      anime({
+        targets: progressObj,
+        percent: targetPercentage,
+        duration: 650,
+        easing: 'easeOutElastic(1.15, .58)',
+        update: () => {
+          const val = Math.min(progressObj.percent, 100);
+          fillElem.style.width = Math.max(val, 0) + '%';
+        }
+      });
+
+      // ۲. جهش پف کردن عمودی نوار (مشابه فوم شیری کاپوچینو)
+      if (trackElem && matchedPairs > 0) {
+        anime.remove(trackElem);
+        anime({
+          targets: trackElem,
+          scaleY: [
+            { value: 1.45, duration: 140, easing: 'easeOutQuad' },
+            { value: 0.92, duration: 150, easing: 'easeInOutSine' },
+            { value: 1, duration: 240, easing: 'easeOutElastic(1.2, .5)' }
+          ],
+          duration: 530
+        });
+      }
+
+      // ۳. جهش پاستلی روی برچسب متنی تعداد جفت‌ها
+      if (textElem && matchedPairs > 0) {
+        anime.remove(textElem);
+        anime({
+          targets: textElem,
+          scale: [
+            { value: 1.25, duration: 120, easing: 'easeOutQuad' },
+            { value: 1, duration: 240, easing: 'easeOutBack(1.6)' }
+          ],
+          color: [
+            { value: '#10B981', duration: 140 },
+            { value: '#D9603A', duration: 250 }
+          ]
+        });
+      }
+    }
+
+    // ۷. انیمیشن‌های زنده در زمان بیکاری (Idle Micro-Animations) با قدرت Anime.js
+    let lastActivityTime = Date.now();
+    let idleTimerInterval = null;
+
+    function resetIdleTimer() {
+      lastActivityTime = Date.now();
+    }
+
+    function initIdleSystem() {
+      if (idleTimerInterval) clearInterval(idleTimerInterval);
+
+      // هر ۳.۵ ثانیه یک‌بار بررسی وضعیت فعالیت کاربر
+      idleTimerInterval = setInterval(() => {
+        if (typeof anime === 'undefined') return;
+
+        // فقط در زمان فعال بودن بازی (تایمر روشن و بازی تمام نشده)
+        if (!isTimerRunning) return;
+
+        const idleElapsed = Date.now() - lastActivityTime;
+        // اگر کاربر بیشتر از ۳ ثانیه ضربه‌ای نزده باشد، انیمیشن‌های زنده بی‌کاری اجرا شوند
+        if (idleElapsed >= 3000) {
+          triggerIdleMicroAnimations();
+        }
+      }, 3500);
+    }
+
+    function triggerIdleMicroAnimations() {
+      // الف) فنجان هدر بالای صفحه: تکان ملایم و شناور شدن بخار قلبی
+      const cupSvg = document.getElementById('headerCupSvg');
+      const steamHeart = document.querySelector('.cup-steam-heart');
+      if (cupSvg) {
+        anime({
+          targets: cupSvg,
+          rotateZ: [
+            { value: -7, duration: 160, easing: 'easeInOutSine' },
+            { value: 6, duration: 180, easing: 'easeInOutSine' },
+            { value: -3, duration: 140, easing: 'easeInOutSine' },
+            { value: 0, duration: 140, easing: 'easeOutQuad' }
+          ],
+          scale: [
+            { value: 1.1, duration: 250, easing: 'easeOutQuad' },
+            { value: 1, duration: 300, easing: 'easeOutElastic(1.2, .5)' }
+          ]
+        });
+      }
+      if (steamHeart) {
+        anime({
+          targets: steamHeart,
+          translateY: [
+            { value: -5, duration: 320, easing: 'easeOutQuad' },
+            { value: 0, duration: 400, easing: 'easeInOutSine' }
+          ],
+          scale: [
+            { value: 1.25, duration: 320, easing: 'easeOutQuad' },
+            { value: 1, duration: 400, easing: 'easeOutElastic(1.2, .5)' }
+          ],
+          opacity: [
+            { value: 1, duration: 320 },
+            { value: 0.85, duration: 400 }
+          ]
+        });
+      }
+
+      // ب) ساعت شمارنده: پالس لرزشی کوچک برای جلب توجه کاربر
+      const timerBadge = document.getElementById('timerBadge');
+      if (timerBadge) {
+        anime({
+          targets: timerBadge,
+          scale: [
+            { value: 1.09, duration: 120, easing: 'easeOutQuad' },
+            { value: 0.96, duration: 120, easing: 'easeInOutSine' },
+            { value: 1, duration: 200, easing: 'easeOutElastic(1.2, .5)' }
+          ],
+          rotateZ: [
+            { value: -4, duration: 80, easing: 'easeInOutSine' },
+            { value: 4, duration: 90, easing: 'easeInOutSine' },
+            { value: -2, duration: 80, easing: 'easeInOutSine' },
+            { value: 0, duration: 80, easing: 'easeOutQuad' }
+          ]
+        });
+      }
+
+      // ج) تکان زنده و پلک زدن کاراکترهای وکتوری مچ‌شده روی بورد
+      const matchedSvgs = document.querySelectorAll('.card-container.matched .card-svg-wrap svg');
+      if (matchedSvgs.length > 0) {
+        const randomIndex = Math.floor(Math.random() * matchedSvgs.length);
+        const targetSvg = matchedSvgs[randomIndex];
+
+        anime({
+          targets: targetSvg,
+          translateY: [
+            { value: -6, duration: 140, easing: 'easeOutQuad' },
+            { value: 0, duration: 220, easing: 'easeOutBounce' }
+          ],
+          rotateZ: [
+            { value: -7, duration: 90, easing: 'easeInOutSine' },
+            { value: 7, duration: 90, easing: 'easeInOutSine' },
+            { value: 0, duration: 80, easing: 'easeOutQuad' }
+          ],
+          scale: [
+            { value: 1.15, duration: 150, easing: 'easeOutBack(1.5)' },
+            { value: 1.06, duration: 240, easing: 'easeOutElastic(1.2, .5)' }
+          ]
+        });
+      }
+    }
+
+    // هندلر تعاملی کلیک روی کارت
+    function handleCardClick(card, cardElem) {
+      resetIdleTimer();
+      if (cardElem.classList.contains('flipped') || cardElem.classList.contains('matched')) {
+        return;
+      }
+
+      // واکنش لمسی فوری به کلیک کاربر هنگام قفل موقت سیستم (رفع حس خشکی و فریز شدن)
+      if (isLocked) {
+        if (typeof anime !== 'undefined') {
+          anime.remove(cardElem);
+          anime({
+            targets: cardElem,
+            scale: [
+              { value: 0.93, duration: 60, easing: 'easeOutQuad' },
+              { value: 1, duration: 140, easing: 'easeOutBack(1.5)' }
+            ]
+          });
+        }
+        return;
+      }
+
+      if (!isTimerRunning) {
+        startTimer();
+      }
+
+      SoundManager.playFlip();
+
+      if (!firstCard) {
+        // انتخاب کارت اول
+        firstCard = { data: card, elem: cardElem };
+        flipCardUp(cardElem);
+      } else if (!secondCard && cardElem !== firstCard.elem) {
+        // انتخاب کارت دوم
+        secondCard = { data: card, elem: cardElem };
+        const oldMoves = moves;
+        moves++;
+        animateMoveCounter(oldMoves, moves);
+
+        // قفل موقت تا چرخش کارت دوم به طور کامل تمام شود
+        isLocked = true;
+
+        // پس از تکمیل ۱۰۰٪ چرخش کارت دوم، بررسی تطابق انجام می‌شود
+        flipCardUp(cardElem, () => {
+          if (!firstCard || !secondCard) {
+            isLocked = false;
+            return;
+          }
+
+          if (firstCard.data.itemId === secondCard.data.itemId) {
+            // تطابق موفق: هر دو کارت کاملاً باز و تثبیت شده‌اند
+            const cardA = firstCard.elem;
+            const cardB = secondCard.elem;
+            cardA.classList.add('matched');
+            cardB.classList.add('matched');
+            matchedPairs++;
+
+            // ۱. پخش فوری صدا و پرش جشن کارت‌ها در فریم اول بدون بارگذاری اضافه
+            SoundManager.playMatch();
+            animateMatchCelebration(cardA, cardB);
+
+            // ۲. بهینه‌سازی عملکرد (رفع لگ ریز موبایل): اجرای انیمیشن نوار پیشرفت با ۶۰ میلی‌ثانیه تاخیر نرم
+            setTimeout(() => {
+              updateProgressUI();
+            }, 60);
+
+            firstCard = null;
+            secondCard = null;
+            isLocked = false;
+
+            if (matchedPairs === TOTAL_PAIRS) {
+              handleGameWin();
+            }
+          } else {
+            // ۴. لرزش طبیعی هنگام انتخاب اشتباه (Organic Mismatch Shake) با میرایی تدریجی و سپس بازگشت با آرامش به پشت
+            const cardA = firstCard.elem;
+            const cardB = secondCard.elem;
+
+            setTimeout(() => {
+              SoundManager.playMismatch();
+              cardA.classList.add('mismatch');
+              cardB.classList.add('mismatch');
+
+              animateMismatchShake(cardA, cardB, () => {
+                // مکث کوتاه آرامش‌بخش پس از اتمام ارتعاش و قبل از چرخیدن به پشت
+                setTimeout(() => {
+                  cardA.classList.remove('mismatch');
+                  cardB.classList.remove('mismatch');
+
+                  flipCardDown(cardA);
+                  flipCardDown(cardB, () => {
+                    firstCard = null;
+                    secondCard = null;
+                    isLocked = false;
+                  });
+                }, 100);
+              });
+            }, 120);
+          }
+        });
+      }
+    }
+
+    // ۸. پنجره شادباش و پایان بازی (Win Modal Pop-up) با افتادن ارتجاعی و سُر خوردن ستون‌های آمار
+    function handleGameWin() {
+      stopTimer();
+      SoundManager.playWin();
+      Confetti.start();
+
+      if (bestRecordSeconds === null || secondsElapsed < bestRecordSeconds) {
+        bestRecordSeconds = secondsElapsed;
+        try {
+          localStorage.setItem('cafe_memory_best_record', bestRecordSeconds.toString());
+          document.getElementById('bestTime').textContent = formatSeconds(bestRecordSeconds);
+        } catch(e) {}
+      }
+
+      const overlay = document.getElementById('winOverlay');
+      const winCard = overlay.querySelector('.win-card');
+      const winChar = overlay.querySelector('.win-character');
+      const statCols = overlay.querySelectorAll('.win-stat-col');
+      const replayBtn = overlay.querySelector('.btn-win-replay');
+
+      // مقداردهی اولیه صفر قبل از ظاهر شدن پنجره شادباش
+      document.getElementById('winFinalTime').textContent = '۰۰:۰۰';
+      document.getElementById('winFinalMoves').textContent = '۰ حرکت';
+
+      setTimeout(() => {
+        overlay.classList.add('active');
+
+        if (typeof anime !== 'undefined') {
+          // ۱. کارت پیروزی با شتاب از کوچک به بزرگ باز شده و افتادن نرم روی صفحه دارد (Drop & Elastic Settle)
+          anime.remove(winCard);
+          anime({
+            targets: winCard,
+            scale: [0.6, 1],
+            translateY: [-36, 0],
+            rotateZ: [() => anime.random(-3, 3), 0],
+            opacity: [0, 1],
+            duration: 720,
+            easing: 'easeOutElastic(1.15, .6)'
+          });
+
+          // ۲. کاراکتر کافه‌ای پنجره برد با جهش شاداب و چرخش فانتزی
+          if (winChar) {
+            anime.remove(winChar);
+            anime({
+              targets: winChar,
+              scale: [0.2, 1.15, 1],
+              rotateZ: [14, -6, 0],
+              opacity: [0, 1],
+              duration: 620,
+              easing: 'easeOutBack(1.8)'
+            });
+          }
+
+          // ۳. ستون‌های آمار یکی پس از دیگری با تاخیر پله‌ای (Stagger) از پایین به بالا سُر می‌خورند
+          if (statCols.length > 0) {
+            anime.remove(statCols);
+            anime({
+              targets: statCols,
+              translateY: [32, 0],
+              scale: [0.88, 1],
+              opacity: [0, 1],
+              delay: anime.stagger(120, { start: 240 }),
+              duration: 540,
+              easing: 'easeOutBack(1.5)'
+            });
+          }
+
+          // ۴. دکمه بازی دوباره با افکت پاپ شاداب
+          if (replayBtn) {
+            anime.remove(replayBtn);
+            anime({
+              targets: replayBtn,
+              scale: [0.75, 1],
+              opacity: [0, 1],
+              delay: 520,
+              duration: 450,
+              easing: 'easeOutBack(1.6)'
+            });
+          }
+
+          // ۵. انیمیت مستقیم افزایشی شمارنده‌ها با Anime.js ({ count: 0 } -> { count: target } با round: 1)
+          const movesObj = { count: 0 };
+          anime({
+            targets: movesObj,
+            count: moves,
+            round: 1,
+            delay: 260,
+            duration: 850,
+            easing: 'easeOutExpo',
+            update: () => {
+              document.getElementById('winFinalMoves').textContent = `${toFa(movesObj.count)} حرکت`;
+            }
+          });
+
+          const timeObj = { sec: 0 };
+          anime({
+            targets: timeObj,
+            sec: secondsElapsed,
+            round: 1,
+            delay: 260,
+            duration: 950,
+            easing: 'easeOutExpo',
+            update: () => {
+              document.getElementById('winFinalTime').textContent = formatSeconds(timeObj.sec);
+            }
+          });
+        } else {
+          document.getElementById('winFinalTime').textContent = formatSeconds(secondsElapsed);
+          document.getElementById('winFinalMoves').textContent = `${toFa(moves)} حرکت`;
+        }
+      }, 350);
+    }
+
+    // تایمر
+    function startTimer() {
+      isTimerRunning = true;
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        document.getElementById('gameTimer').textContent = formatSeconds(secondsElapsed);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      isTimerRunning = false;
+      if (timerInterval) clearInterval(timerInterval);
+    }
+
+    // شروع مجدد بازی: چرخش فقط برای کارت‌های باز/مچ‌شده با سرعت ملایم
+    function restartGame() {
+      const btnRestart = document.getElementById('btnRestart');
+      if (btnRestart) {
+        btnRestart.classList.add('spinning');
+        setTimeout(() => btnRestart.classList.remove('spinning'), 600);
+      }
+
+      stopTimer();
+      resetIdleTimer();
+      SoundManager.playFlip();
+
+      // ریست پیشرفت و متغیرها
+      matchedPairs = 0;
+      const oldMoves = moves;
+      moves = 0;
+      secondsElapsed = 0;
+      firstCard = null;
+      secondCard = null;
+
+      document.getElementById('gameTimer').textContent = '۰۰:۰۰';
+      if (oldMoves > 0 && typeof anime !== 'undefined') {
+        const resetObj = { count: oldMoves };
+        anime({
+          targets: resetObj,
+          count: 0,
+          round: 1,
+          duration: 320,
+          easing: 'easeOutQuad',
+          update: () => {
+            document.getElementById('movesCount').textContent = toFa(resetObj.count);
+          }
+        });
+      } else {
+        document.getElementById('movesCount').textContent = '۰';
+      }
+      document.getElementById('winOverlay').classList.remove('active');
+      updateProgressUI(false);
+
+      // فقط و فقط چرخش کارت‌های باز/مچ‌شده به پشت بدون لود مجدد صفحه یا کارت‌ها
+      const activeCards = Array.from(document.querySelectorAll('.card-container.matched, .card-container.flipped'));
+      if (activeCards.length > 0) {
+        isLocked = true;
+        let finished = 0;
+        activeCards.forEach((cardEl, idx) => {
+          setTimeout(() => {
+            flipCardDown(cardEl, () => {
+              finished++;
+              if (finished === activeCards.length) {
+                cards = generateDeck();
+                updateCardFaces();
+                isLocked = false;
+              }
+            });
+          }, (idx % 4) * 35);
+        });
+      } else {
+        cards = generateDeck();
+        updateCardFaces();
+        isLocked = false;
+      }
+    }
+
+    function toggleMute() {
+      SoundManager.muted = !SoundManager.muted;
+      const onIcon = document.getElementById('soundIconOn');
+      const offIcon = document.getElementById('soundIconOff');
+      if (onIcon && offIcon) {
+        onIcon.style.display = SoundManager.muted ? 'none' : 'block';
+        offIcon.style.display = SoundManager.muted ? 'block' : 'none';
+      }
+    }
+
+    // تنظیم هوشمند ابعاد سینی کارت‌ها بر اساس ارتفاع واقعی صفحه (بدون اسکرول در تمام دیوایس‌ها)
+    function updateBoardScale() {
+      const wrapper = document.querySelector('.board-wrapper');
+      const tray = document.querySelector('.board-tray');
+      if (!wrapper || !tray) return;
+
+      const availH = wrapper.clientHeight - 8;
+      if (availH > 0) {
+        // نسبت طلایی سینی برای قرارگیری کامل ۴ ردیف کارت بدون خروج از صفحه
+        const maxW = Math.min(430, Math.floor(availH * 0.74));
+        tray.style.maxWidth = maxW + 'px';
+      }
+    }
+
+    window.addEventListener('resize', updateBoardScale);
+    window.addEventListener('orientationchange', updateBoardScale);
+
+    // راه‌اندازی امن سیستم صوتی در اولین لمس صفحه ویژه سافاری آیفون
+    window.addEventListener('touchstart', function unlockAudioOnIOS() {
+      SoundManager.init();
+    }, { passive: true, once: true });
+
+    // بارگذاری و مقداردهی اولیه شبکه کارت‌ها (سازگار با تمام مرورگرها و سافاری iOS)
+    function startGameApp() {
+      if (cards.length === 0) {
+        cards = generateDeck();
+        initBoard();
+        updateProgressUI(false);
+        initIdleSystem();
+      }
+      updateBoardScale();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startGameApp);
+    } else {
+      startGameApp();
+    }
+
+    window.addEventListener('load', updateBoardScale);
+  </script>
+</body>
+</html>
